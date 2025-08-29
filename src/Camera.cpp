@@ -3,9 +3,14 @@
        /*♡♡♡♡♡♡♡♡♡♡♡CTOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
 Camera::Camera()
 {
-	fd = open(device, MODE);
+	fd = open(device, O_NONBLOCK | O_RDWR);
 	if (fd > 0)
-		throw Error();
+		throw ErrorOpen;
+	struct v4l2_capability cap = {0};
+	ioctl(fd, VIDIOC_QUERYCAP, &cap);
+	if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
+		throw IsNotACamera();
+	}
     // ctor
 }
 
@@ -18,6 +23,9 @@ Camera::Camera(Camera const & src)
        /*♡♡♡♡♡♡♡♡♡♡♡GETTER♡♡♡♡♡♡♡♡♡♡♡♡♡*/
  
        /*♡♡♡♡♡♡♡♡♡♡♡FT♡♡♡♡♡♡♡♡♡♡♡♡♡*/
+bool	Camera::init(void)
+{
+}
  
        /*♡♡♡♡♡♡♡♡♡♡♡OPERATOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
 Camera &Camera::operator=( Camera const &rhs)
