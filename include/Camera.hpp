@@ -11,7 +11,6 @@
 #include <fstream>
 #include <ctime>
 #include <iostream>
-
 // Constants
 #define OK 0
 #define ERROR_SET_FMT -1
@@ -22,7 +21,10 @@
 #define ERROR_CTL_EPOLL -6
 #define NUMBER_REQ_BUFFER 4
 #define ERROR_OFSTREM_NON_OPEN -7
+#define ERROR_NO_SET_CTRL -8
 #define TIME_OUT -8
+#define DISABLE 1
+#define ENABLE  0
 #define WATIN_TIME_MAX 3000
 
 class Camera
@@ -39,7 +41,7 @@ class Camera
        const std::vector<std::string> getFormatType(void) const;
 
        /*♡♡♡♡♡♡♡♡♡♡♡FT♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-       bool setParameters(int flags);
+       int setParameters(__u32 flag, __s32 value) const;
        int takeAFrame(void);
        int initV4L2(void);
 

@@ -41,7 +41,7 @@ int		Camera::_SetFormat( void ){
 		fmt.fmt.pix.width = _fmt_wdt;
 		fmt.fmt.pix.height = _fmt_lght;
 		//TODO verificare il fromato corretto 
-		fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_JPEG ;
+		fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG ;
 		fmt.fmt.pix.field = V4L2_FIELD_NONE;
 		if (ioctl(this->_fd, VIDIOC_S_FMT , &fmt) < 0){
 			return ERROR_SET_FMT;
@@ -159,10 +159,16 @@ int	Camera::takeAFrame( void )
 	return OK;
 }
 
-bool	Camera::setParameters( int flags )
+int	Camera::setParameters( __u32 flag, __s32 value ) const
 {
-    (void)flags; // Unused for now
-	return false;
+	struct v4l2_control ctrl;
+	memset(&ctrl, 0, sizeof(ctrl));
+	ctrl.id = flag;
+	ctrl.value = value;
+	if (ioctl(_fd, VIDIOC_S_CTRL, &ctrl) < 0){
+		return ERROR_NO_SET_CTRL;
+	}
+	return OK;
 }
 
 bool Camera::ft_ioctl(const int fd, const int flags, const void *args) const
