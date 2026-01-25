@@ -123,7 +123,7 @@ int Camera::_saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buff
 	file.close();
 	return OK;
 }
-int	Camera::takeAFrame( void )
+int	Camera::takeAFrame( int flag )
 { 
 	struct epoll_event ev[1];
     memset(ev, 0, sizeof(ev)); // Initialize array
@@ -147,11 +147,15 @@ int	Camera::takeAFrame( void )
     }
 
 	// salvo in un vector con le info del buffer
-	std::vector<uint8_t> frame(_buffer_size[buf.index]);
+	if (flag == SAVE_LOCAL){
+		std::vector<uint8_t> frame(_buffer_size[buf.index]);
 	memcpy(frame.data(), _buffer[buf.index], _buffer_size[buf.index]);
 	if (_saveFrame(frame, buf) != OK){
 		return ERROR_OFSTREM_NON_OPEN;
 	}
+
+	}
+	
 	// rimette in coda
 	if (ioctl(_fd,  VIDIOC_QBUF , &buf) < 0) {
 		return ERROR_QBUF;
@@ -170,6 +174,31 @@ int	Camera::setParameters( __u32 flag, __s32 value ) const
 	}
 	return OK;
 }
+/* struct v4l2_queryctrl queryctrl;
+struct v4l2_control control;
+
+memset(&queryctrl, 0, sizeof(queryctrl));
+queryctrl.id = V4L2_CID_BRIGHTNESS;
+
+if (-1 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
+    if (errno != EINVAL) {
+        perror("VIDIOC_QUERYCTRL");
+        exit(EXIT_FAILURE);
+    } else {
+        printf("V4L2_CID_BRIGHTNESS is not supportedn");
+    }
+} else if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED) {
+    printf("V4L2_CID_BRIGHTNESS is not supportedn");
+} else {
+    memset(&control, 0, sizeof (control));
+    control.id = V4L2_CID_BRIGHTNESS;
+    control.value = queryctrl.default_value;
+
+    if (-1 == ioctl(fd, VIDIOC_S_CTRL, &control)) {
+        perror("VIDIOC_S_CTRL");
+        exit(EXIT_FAILURE);
+    }
+} */
 
 bool Camera::ft_ioctl(const int fd, const int flags, const void *args) const
 {

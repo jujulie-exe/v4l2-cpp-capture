@@ -22,9 +22,11 @@
 #define NUMBER_REQ_BUFFER 4
 #define ERROR_OFSTREM_NON_OPEN -7
 #define ERROR_NO_SET_CTRL -8
-#define TIME_OUT -8
+#define TIME_OUT -9
 #define DISABLE 1
 #define ENABLE  0
+#define SAVE_LOCAL 1
+#define DONT_SAVE 0
 #define WATIN_TIME_MAX 3000
 
 class Camera
@@ -42,7 +44,7 @@ class Camera
 
        /*♡♡♡♡♡♡♡♡♡♡♡FT♡♡♡♡♡♡♡♡♡♡♡♡♡*/
        int setParameters(__u32 flag, __s32 value) const;
-       int takeAFrame(void);
+       int takeAFrame(int flag = SAVE_LOCAL);
        int initV4L2(void);
 
        /*♡♡♡♡♡♡♡♡♡♡♡OPERATOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
