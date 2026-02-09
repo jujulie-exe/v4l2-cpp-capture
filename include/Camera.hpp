@@ -33,7 +33,7 @@ class Camera
 {
    public:
        /*♡♡♡♡♡♡♡♡♡♡♡CTOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-       Camera(const std::string& pathDevice, size_t lght, size_t wdt);
+       Camera(const std::string& pathDevice, size_t height, size_t width);
        Camera(Camera const & src) = delete;
       
     
@@ -44,7 +44,7 @@ class Camera
 
        /*♡♡♡♡♡♡♡♡♡♡♡FT♡♡♡♡♡♡♡♡♡♡♡♡♡*/
        int setParameters(__u32 flag, __s32 value) const;
-       int takeAFrame(int flag = SAVE_LOCAL);
+       int takeAFrame(int flag = SAVE_LOCAL, const std::string& prefix = "frame", const std::string& directory = "./");
        int initV4L2(void);
 
        /*♡♡♡♡♡♡♡♡♡♡♡OPERATOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
@@ -71,7 +71,7 @@ class Camera
        int _reqBuffer(void);
        int _mmapBuffer(int index);
        int _epollStart(void);
-       int _saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buffer& buf) const;
+       int _saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buffer& buf, const std::string& prefix, const std::string& directory) const;
 
        int _fd;
        int _epoll_fd;

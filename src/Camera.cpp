@@ -6,8 +6,8 @@
 #include <cstring> // For memset
 
        /*♡♡♡♡♡♡♡♡♡♡♡CTOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-Camera::Camera(const std::string& pathDevice, size_t lght, size_t wdt)
-: _fd(-1), _epoll_fd(-1), _fmt_lght(lght), _fmt_wdt(wdt), _device(pathDevice)
+Camera::Camera(const std::string& pathDevice, size_t height, size_t width)
+: _fd(-1), _epoll_fd(-1), _fmt_lght(height), _fmt_wdt(width), _device(pathDevice)
 {
 	this->_fd = open(_device.c_str(), O_NONBLOCK | O_RDWR);
 	if (_fd < 0)
@@ -110,11 +110,11 @@ int		Camera::initV4L2(void)
 	if (_epollStart() != OK) return ERROR_EPOLL_CREATE;
 	return OK;
 }
-int Camera::_saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buffer& buf) const{
+int Camera::_saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buffer& buf, const std::string& prefix, const std::string& directory) const{
 	std::time_t now = std::time(NULL);
 	long long r = static_cast<long long>(std::rand());
     long long id = static_cast<long long>(now) * 100000 + r;
-	std::string name = "frame_" + std::to_string(id) + ".jpg";
+	std::string name = directory + prefix + std::to_string(id) + ".jpg";
 	std::ofstream file(name, std::ios::binary | std::ios::out);
 	if (!file.is_open()) {
 		return ERROR_OFSTREM_NON_OPEN;
@@ -123,7 +123,7 @@ int Camera::_saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buff
 	file.close();
 	return OK;
 }
-int	Camera::takeAFrame( int flag )
+int	Camera::takeAFrame( int flag, const std::string& prefix, const std::string& directory )
 { 
 	struct epoll_event ev[1];
     memset(ev, 0, sizeof(ev)); // Initialize array
@@ -149,11 +149,10 @@ int	Camera::takeAFrame( int flag )
 	// salvo in un vector con le info del buffer
 	if (flag == SAVE_LOCAL){
 		std::vector<uint8_t> frame(_buffer_size[buf.index]);
-	memcpy(frame.data(), _buffer[buf.index], _buffer_size[buf.index]);
-	if (_saveFrame(frame, buf) != OK){
-		return ERROR_OFSTREM_NON_OPEN;
-	}
-
+		memcpy(frame.data(), _buffer[buf.index], _buffer_size[buf.index]);
+		if (_saveFrame(frame, buf, prefix, directory) != OK){
+			return ERROR_OFSTREM_NON_OPEN;
+		}
 	}
 	
 	// rimette in coda
