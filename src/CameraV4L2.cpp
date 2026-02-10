@@ -1,4 +1,4 @@
-#include "../include/Camera.hpp"
+#include "../include/CameraV4L2.hpp"
 #include <iostream>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -6,7 +6,7 @@
 #include <cstring> // For memset
 
        /*♡♡♡♡♡♡♡♡♡♡♡CTOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-Camera::Camera(const std::string& pathDevice, size_t height, size_t width)
+CameraV4L2::CameraV4L2(const std::string& pathDevice, size_t height, size_t width)
 : _fd(-1), _epoll_fd(-1), _fmt_lght(height), _fmt_wdt(width), _device(pathDevice)
 {
 	this->_fd = open(_device.c_str(), O_NONBLOCK | O_RDWR);
@@ -26,15 +26,15 @@ Camera::Camera(const std::string& pathDevice, size_t height, size_t width)
 }
 
        /*♡♡♡♡♡♡♡♡♡♡♡GETTER♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-const std::string Camera::getNameCamera() const {
+const std::string CameraV4L2::getNameCamera() const {
 	return "";
 }
-const std::vector<std::string> Camera::getFormatType() const {
+const std::vector<std::string> CameraV4L2::getFormatType() const {
 	return {""};
 }
 
        /*♡♡♡♡♡♡♡♡♡♡♡FT♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-int		Camera::_SetFormat( void ){
+int		CameraV4L2::_SetFormat( void ){
 		struct v4l2_format fmt;
         memset(&fmt, 0, sizeof(fmt));
 		fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -48,7 +48,7 @@ int		Camera::_SetFormat( void ){
 		}
 		return OK;
 }
-int		Camera::_reqBuffer(void){
+int		CameraV4L2::_reqBuffer(void){
 		struct v4l2_requestbuffers req;
         memset(&req, 0, sizeof(req));
 		req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -61,7 +61,7 @@ int		Camera::_reqBuffer(void){
 		_buffer_size.resize(req.count);
 		return OK;
 }
-int		Camera::_mmapBuffer(int index){
+int		CameraV4L2::_mmapBuffer(int index){
         struct v4l2_buffer buf;
         memset(&buf, 0, sizeof(buf));
         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -81,7 +81,7 @@ int		Camera::_mmapBuffer(int index){
         return OK;
 }
 
-int		Camera::_epollStart( void ) {
+int		CameraV4L2::_epollStart( void ) {
 	this->_epoll_fd = epoll_create1(0);
 	if (this->_epoll_fd < 0){
 		return ERROR_EPOLL_CREATE;
@@ -95,7 +95,7 @@ int		Camera::_epollStart( void ) {
 	}
 	return OK;
 }
-int		Camera::initV4L2(void)
+int		CameraV4L2::initCamera(void)
 {
 	if (_reqBuffer() != OK) return ERROR_REQ_BUFFER;
 	for (size_t i = 0; i < _buffer.size(); ++i)
@@ -110,7 +110,7 @@ int		Camera::initV4L2(void)
 	if (_epollStart() != OK) return ERROR_EPOLL_CREATE;
 	return OK;
 }
-int Camera::_saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buffer& buf, const std::string& prefix, const std::string& directory) const{
+int CameraV4L2::_saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buffer& buf, const std::string& prefix, const std::string& directory) const{
 	std::time_t now = std::time(NULL);
 	long long r = static_cast<long long>(std::rand());
     long long id = static_cast<long long>(now) * 100000 + r;
@@ -123,7 +123,7 @@ int Camera::_saveFrame(const std::vector<uint8_t>& frame, const struct v4l2_buff
 	file.close();
 	return OK;
 }
-int	Camera::takeAFrame( int flag, const std::string& prefix, const std::string& directory )
+int	CameraV4L2::takeAFrame( int flag, const std::string& prefix, const std::string& directory )
 { 
 	struct epoll_event ev[1];
     memset(ev, 0, sizeof(ev)); // Initialize array
@@ -162,7 +162,7 @@ int	Camera::takeAFrame( int flag, const std::string& prefix, const std::string& 
 	return OK;
 }
 
-int	Camera::setParameters( __u32 flag, __s32 value ) const
+int	CameraV4L2::setParameters( uint32_t flag, int32_t value )
 {
 	struct v4l2_control ctrl;
 	memset(&ctrl, 0, sizeof(ctrl));
@@ -199,7 +199,7 @@ if (-1 == ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl)) {
     }
 } */
 
-bool Camera::ft_ioctl(const int fd, const int flags, const void *args) const
+bool CameraV4L2::ft_ioctl(const int fd, const int flags, const void *args) const
 {
     // Wrapper for ioctl if needed, or implement logic
     // For now just a placeholder as it was declared in header
@@ -209,7 +209,7 @@ bool Camera::ft_ioctl(const int fd, const int flags, const void *args) const
 }
  
        /*♡♡♡♡♡♡♡♡♡♡♡DTOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-Camera::~Camera()
+CameraV4L2::~CameraV4L2()
 {
     std::cout << "Destructor called" << std::endl;
     if (_fd > 0)

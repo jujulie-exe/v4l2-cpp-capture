@@ -1,5 +1,5 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef CAMERAV4L2_H
+#define CAMERAVAL2_H
 
 #include <string>
 #include <vector>
@@ -11,6 +11,7 @@
 #include <fstream>
 #include <ctime>
 #include <iostream>
+#include "ICamera.hpp"
 // Constants
 #define OK 0
 #define ERROR_SET_FMT -1
@@ -25,33 +26,33 @@
 #define TIME_OUT -9
 #define DISABLE 1
 #define ENABLE  0
-#define SAVE_LOCAL 1
+
 #define DONT_SAVE 0
 #define WATIN_TIME_MAX 3000
 
-class Camera
+class CameraV4L2 : public ICamera
 {
    public:
        /*♡♡♡♡♡♡♡♡♡♡♡CTOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-       Camera(const std::string& pathDevice, size_t height, size_t width);
-       Camera(Camera const & src) = delete;
+       CameraV4L2(const std::string& pathDevice, size_t height, size_t width);
+       CameraV4L2(CameraV4L2 const & src) = delete;
       
     
 
        /*♡♡♡♡♡♡♡♡♡♡♡GETTER♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-       const std::string getNameCamera(void) const;
-       const std::vector<std::string> getFormatType(void) const;
+       const std::string getNameCamera(void) const override;
+       const std::vector<std::string> getFormatType(void) const override;
 
        /*♡♡♡♡♡♡♡♡♡♡♡FT♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-       int setParameters(__u32 flag, __s32 value) const;
-       int takeAFrame(int flag = SAVE_LOCAL, const std::string& prefix = "frame", const std::string& directory = "./");
-       int initV4L2(void);
+       virtual int setParameters(uint32_t flag, int32_t value) override;
+       int takeAFrame(int flag = SAVE_LOCAL, const std::string& prefix = "frame", const std::string& directory = "./") override;
+       int initCamera(void) override;
 
        /*♡♡♡♡♡♡♡♡♡♡♡OPERATOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-       Camera& operator=(Camera const & rsh) = delete;    //Cannon
+       CameraV4L2& operator=(CameraV4L2 const & rsh) = delete;    //Cannon
  
        /*♡♡♡♡♡♡♡♡♡♡♡DTOR♡♡♡♡♡♡♡♡♡♡♡♡♡*/
-       virtual ~Camera(); //Cannon
+       virtual ~CameraV4L2(); //Cannon
        class ErrorOpen : public std::exception
        {
            public:
@@ -82,5 +83,5 @@ class Camera
        std::vector<void*> _buffer;
        std::vector<size_t> _buffer_size;
 };
-// std::ostream &operator<<(std::ostream &o, const Camera &rhs);
+// std::ostream &operator<<(std::ostream &o, const CameraV4L2 &rhs);
 #endif // CAMERA_H
